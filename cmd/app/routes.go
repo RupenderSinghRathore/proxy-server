@@ -2,10 +2,10 @@ package main
 
 import "net/http"
 
-func newRouter() *http.ServeMux {
+func (app *application) newRouter() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", redirect)
+	mux.HandleFunc("/", app.redirect)
 
 	return mux
 }
