@@ -13,16 +13,23 @@ type application struct {
 }
 
 func main() {
-	addr := flag.String("addr", ":4000", "Port to listen on")
+	port := flag.String("port", ":4000", "Port to listen on")
 	target := flag.String("url", "http://localhost:8080", "Destination Url")
+	flag.Parse()
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger.Info(*target)
 	app := application{
 		logger: logger,
 		target: *target,
 	}
-	mux := app.newRouter()
-	app.logger.Info("server started..", "port", *addr)
-	if err := http.ListenAndServe(*addr, mux); err != nil {
-		app.logger.Error(err.Error())
+	srv := http.Server{
+		Addr:     *port,
+		Handler:  app.newRouter(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
+	app.logger.Info("server started..", "port", *port)
+	err := srv.ListenAndServe()
+	app.logger.Error(err.Error())
+	os.Exit(1)
 }

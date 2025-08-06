@@ -1,11 +1,16 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
 
-func (app *application) newRouter() *http.ServeMux {
+	"github.com/justinas/alice"
+)
+
+func (app *application) newRouter() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", app.redirect)
 
-	return mux
+	standard := alice.New(app.recoverPanic, app.setHeaders)
+	return standard.Then(mux)
 }
