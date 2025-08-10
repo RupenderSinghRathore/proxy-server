@@ -9,7 +9,8 @@ import (
 func (app *application) newRouter() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", app.redirect)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, app.logRequest)
+	mux.Handle("/", dynamic.ThenFunc(app.redirect))
 
 	standard := alice.New(app.recoverPanic, app.setHeaders)
 	return standard.Then(mux)
