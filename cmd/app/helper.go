@@ -25,7 +25,7 @@ func (app *application) makeRequest(url string, r *http.Request) (*http.Response
 		return nil, err
 	}
 	res.Header.Add("X-Cache", "MISS")
-	return res, err
+	return res, nil
 }
 
 func (app *application) serverError(w http.ResponseWriter, err error) {

@@ -10,10 +10,13 @@ import (
 )
 
 func (app *application) redirect(w http.ResponseWriter, r *http.Request) {
+	method := r.Method
 	resMap := make(map[string]response.Resp)
-	ok := app.cachedResponse(w, r, resMap)
-	if ok {
-		return
+	if method == "GET" {
+		ok := app.cachedResponse(w, r, resMap)
+		if ok {
+			return
+		}
 	}
 	url := fmt.Sprint(app.target + r.URL.Path)
 	res, err := app.makeRequest(url, r)
@@ -27,16 +30,18 @@ func (app *application) redirect(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	resMap[r.URL.Path] = response.Resp{
-		Header: res.Header,
-		Body:   body,
+	if method == "GET" {
+		resMap[r.URL.Path] = response.Resp{
+			Header: res.Header,
+			Body:   body,
+		}
+		data, err := json.Marshal(resMap)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+		app.sessionManager.Put(r.Context(), "data", data)
 	}
-	data, err := json.Marshal(resMap)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	app.sessionManager.Put(r.Context(), "data", data)
 	for key, vals := range res.Header {
 		for _, v := range vals {
 			w.Header().Add(key, v)
