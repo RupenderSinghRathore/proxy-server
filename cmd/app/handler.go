@@ -44,9 +44,10 @@ func (app *application) redirect(w http.ResponseWriter, r *http.Request) {
 	}
 	for key, vals := range res.Header {
 		for _, v := range vals {
-			w.Header().Add(key, v)
+			w.Header().Set(key, v)
 		}
 	}
 	w.Header().Set("X-Cache", "MISS")
+	w.WriteHeader(res.StatusCode)
 	w.Write(body)
 }

@@ -19,7 +19,11 @@ func (app *application) makeRequest(url string, r *http.Request) (*http.Response
 	}
 	req.Header = r.Header
 
-	client := http.Client{}
+	client := http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
